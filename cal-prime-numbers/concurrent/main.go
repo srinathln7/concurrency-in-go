@@ -36,15 +36,15 @@ func doWork(wg *sync.WaitGroup, thread_id int) {
 	defer wg.Done()
 
 	for {
-		atomic.AddUint64(&CURRENT_NUM, 1)
+		x := atomic.AddUint64(&CURRENT_NUM, 1)
 
 		fmt.Printf("\n go routine = %v, CURRENT_NUM= %v \n", thread_id, CURRENT_NUM)
 		// Breaking condition
-		if CURRENT_NUM > N {
+		if x > N {
 			break
 		}
 
-		if isPrime(CURRENT_NUM) {
+		if isPrime(x) {
 			atomic.AddUint64(&COUNT_PRIME, 1)
 		}
 	}
