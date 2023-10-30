@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 func main() {
 
@@ -38,4 +41,43 @@ func main() {
 
 	value1, ok1 := <-intStream
 	fmt.Printf("(%v): %v \n", value1, ok1)
+
+	// range over a channel
+	integerStream := make(chan int)
+	go func() {
+		defer close(integerStream)
+		for i := 1; i <= 5; i++ {
+
+			fmt.Println("Sending i=", i)
+			integerStream <- i
+		}
+	}()
+
+	for integer := range integerStream {
+		fmt.Printf("Received %v\n", integer)
+	}
+
+	//simple way to unblock multiple go routines at once
+
+	begin := make(chan interface{})
+	var wg sync.WaitGroup
+
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+
+			// Block all go routines here until a value has been written into the channel
+			<-begin
+			fmt.Printf("%v has begun \n", i)
+		}(i)
+	}
+
+	// Closing a channel is one of the ways you can signal multiple goroutines simultaneously
+	// If you have n goroutines waiting on a single channel, instead of writing n times to the channel to unblock each goroutines
+	// you can simply close the channel. Closing is both cheaper and faster than performing `n` writes.
+
+	close(begin) // Unblock all go routines
+
+	wg.Wait()
 }
