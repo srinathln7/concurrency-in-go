@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-const NUM_OF_WORKERS = 1000000
+const NUM_OF_WORKERS = 10000
 
 type Queue struct {
 	mu    sync.Mutex
@@ -17,15 +17,20 @@ func newQueue() *Queue {
 }
 
 func (q *Queue) enqueue(wg *sync.WaitGroup, val int) {
+	// Remember defer oeprations are like stack - LIFO.
+	// So second defer line will return first (Line 25)
+
+	defer wg.Done()
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
 	q.queue = append(q.queue, val)
 	log.Printf("enqueued item %d to the queue \n", val)
-	wg.Done()
 }
 
 func (q *Queue) dequeue(wg *sync.WaitGroup) {
+
+	defer wg.Done()
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -40,8 +45,6 @@ func (q *Queue) dequeue(wg *sync.WaitGroup) {
 		}
 		log.Printf("dequeued item %d from the queue \n", item)
 	}
-
-	wg.Done()
 }
 
 func main() {
