@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -14,16 +15,22 @@ type Response struct {
 // fetchSlowAPI: exhibits non-deterministic behaviour with different response time
 func fetchSlowAPI(respCh chan Response) {
 	log.Println("fetching slow API")
-	time.Sleep(101 * time.Millisecond)
+
+	// success sceanario for handling reqs
+	time.Sleep(10 * time.Millisecond)
+
+	// req-timeout scenario
+	// time.Sleep(10 * time.Millisecond)
 
 	respCh <- Response{msg: "response from slow API", err: nil}
 }
 
 // fetchAPI: Tackles the `fetchSlowAPI` request appropriately
 func fetchAPI(ctx context.Context) {
-	ctx, cancel := context.WithTimeout(ctx, 100*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Millisecond)
 	defer cancel()
 
+	reqID := ctx.Value(ctxReqID).(string)
 	respCh := make(chan Response)
 	go func() {
 		fetchSlowAPI(respCh)
@@ -37,14 +44,21 @@ func fetchAPI(ctx context.Context) {
 			if resp.err != nil {
 				log.Printf("response from slow api - resp %s with err %s", resp.msg, resp.err.Error())
 			} else {
-				log.Printf("response from slow api - resp %s with no error", resp.msg)
+				log.Printf("response for reqid=%s from slow api: %s with no error", reqID, resp.msg)
 			}
 			return
 		}
 	}
 }
 
+type ctxKey int
+
+const (
+	ctxReqID ctxKey = iota
+)
+
 func main() {
-	ctx := context.Background()
+	// Just for sample use
+	ctx := context.WithValue(context.Background(), ctxReqID, strconv.Itoa(int(ctxReqID)))
 	fetchAPI(ctx)
 }
