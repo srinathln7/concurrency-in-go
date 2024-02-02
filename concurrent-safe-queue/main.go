@@ -5,7 +5,7 @@ import (
 	"sync"
 )
 
-const NUM_OF_WORKERS = 10000
+const NUM_OF_WORKERS = 1000000
 
 type Queue struct {
 	mu    sync.Mutex

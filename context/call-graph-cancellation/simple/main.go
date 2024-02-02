@@ -56,6 +56,8 @@ func printFarewell(done <-chan interface{}) error {
 }
 
 func genGreeting(done <-chan interface{}) (string, error) {
+
+	//time.Sleep(500 * time.Millisecond)
 	// notice the use of `switch` block and not `select`
 	switch locale, err := locale(done); {
 	case err != nil:
@@ -83,7 +85,7 @@ func locale(done <-chan interface{}) (string, error) {
 	select {
 	case <-done:
 		return "", fmt.Errorf("cancelled")
-	case <-time.After(10 * time.Second):
+	case <-time.After(1 * time.Second):
 	}
 
 	return "EN/US", nil

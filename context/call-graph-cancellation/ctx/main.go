@@ -13,8 +13,8 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	//`WithCancel` fns return a new `context` that closes its `done` channel
-	// when the returned `cancel` function is called
+	// WithCancel returns a copy of parent 'context' with a new Done channel. The returned context's Done channel is closed
+	//when the returned cancel function is called or when the parent context's Done channel is closed, whichever happens first
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// Call the `cancel` function before the `main` exits
@@ -67,8 +67,9 @@ func genGreeting(ctx context.Context) (string, error) {
 
 	// WithTimeout returns WithDeadline(parent, time.Now().Add(timeout)) and closes the `done` channel after the given `timeOut` duration.
 	// NOTICE the use of the new context in this function call unlike others to ensure that `genGreeting` timesout after 1s.
-	// This is the beauty of the context pkg. Children can use its own context pkg.
+	// This is the BEAUTY of the context pkg. Children can use its own context pkg.
 	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+
 	defer cancel()
 
 	// notice the use of `switch` block and not `select`
