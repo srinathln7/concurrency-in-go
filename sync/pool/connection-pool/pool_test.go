@@ -10,7 +10,6 @@ import (
 )
 
 func warmServiceConnCache() *sync.Pool {
-
 	p := &sync.Pool{
 		New: connectToService,
 	}
@@ -28,7 +27,6 @@ func startNetworkDaemonPool() *sync.WaitGroup {
 
 	go func() {
 		connPool := warmServiceConnCache()
-
 		server, err := net.Listen("tcp", ":8081")
 		if err != nil {
 			log.Fatalf("cannot listen: %v", err)

@@ -1,0 +1,6 @@
+# Multi-threaded TCP Server
+This code provides a simple TCP server that allows clients to monitor the status codes of URLs in real-time. It utilizes concurrency to handle multiple client connections simultaneously and fetches URL status codes asynchronously to improve performance.
+
+## Remarks
+ To address the issue of the server entering an infinite loop when `Ctrl+C` is pressed on the client side (using `nc`), and to correctly decrement the number of connected clients, we need to adjust the handling of client disconnections in the server code. The previous implementation attempts to listen for interrupt signals (`os.Interrupt, syscall.SIGTERM`) within the handerConn function, which is not effective for detecting client-side disconnections in this context. These signals are typically used to handle termination of the current process (i.e., the server itself), not to monitor the state of individual TCP connections.
+The key to solving this problem is to detect when the client has disconnected (for example, when `Ctrl+C` is pressed during an `nc` session, which closes the client's end of the TCP connection). This can be identified by an error or `EOF` (end-of-file) condition when attempting to read from the connection.
