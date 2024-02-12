@@ -75,6 +75,7 @@ func (c *client) recvEmail(rCh chan []byte) <-chan email {
 	log.Println("invoking recvEmail func")
 	recvCh := make(chan email)
 	go func() {
+		defer close(recvCh)
 		rPayload := <-rCh
 		// Deserialize logic
 		var email email
@@ -90,27 +91,32 @@ func (c *client) recvEmail(rCh chan []byte) <-chan email {
 }
 
 func main() {
-	startTime := time.Now()
+
 	dir := []string{"abc@example.com", "def@exmaple.com", "ghij@example.com", "klm@example.com"}
 	server := newServer("127.0.0.1", dir)
+	defer close(server.ch)
 
-	client := client{}
 	// Simulate sending msgs over N/w => serialize/deserailize
 	// Do work concurrently, handle timeouts etc
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(MAX_TIMEOUT)*time.Millisecond)
 	defer cancel()
 
-	// Spin up workers
-	go server.doWork()
+	server.run(ctx)
+}
 
-	for range dir {
+func (s *server) run(ctx context.Context) {
+	startTime := time.Now()
+
+	client := client{}
+	go s.doWork()
+
+	for range s.dir {
 		select {
 		case <-ctx.Done():
 			log.Fatal("request timed out.")
-		case email := <-client.recvEmail(server.ch):
+		case email := <-client.recvEmail(s.ch):
 			log.Printf("%s received email from %s with body %s\n", email.To, email.From, email.Body)
 		}
 	}
-
 	log.Printf("All Emails sent succesfully in %vs \n", time.Since(startTime))
 }
