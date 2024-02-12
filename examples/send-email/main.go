@@ -20,6 +20,9 @@ type server struct {
 	ch  chan []byte
 }
 
+type client struct {
+}
+
 type email struct {
 	From string `json:"from"`
 	To   string `json:"to"`
@@ -68,7 +71,8 @@ func (s *server) doWork() {
 	wg.Wait()
 }
 
-func recvEmail(rCh chan []byte) <-chan email {
+func (c *client) recvEmail(rCh chan []byte) <-chan email {
+	log.Println("invoking recvEmail func")
 	recvCh := make(chan email)
 	go func() {
 		rPayload := <-rCh
@@ -81,6 +85,7 @@ func recvEmail(rCh chan []byte) <-chan email {
 		recvCh <- email
 	}()
 
+	log.Println("returning client's email")
 	return recvCh
 }
 
@@ -89,6 +94,7 @@ func main() {
 	dir := []string{"abc@example.com", "def@exmaple.com", "ghij@example.com", "klm@example.com"}
 	server := newServer("127.0.0.1", dir)
 
+	client := client{}
 	// Simulate sending msgs over N/w => serialize/deserailize
 	// Do work concurrently, handle timeouts etc
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(MAX_TIMEOUT)*time.Millisecond)
@@ -101,7 +107,7 @@ func main() {
 		select {
 		case <-ctx.Done():
 			log.Fatal("request timed out.")
-		case email := <-recvEmail(server.ch):
+		case email := <-client.recvEmail(server.ch):
 			log.Printf("%s received email from %s with body %s\n", email.To, email.From, email.Body)
 		}
 	}
