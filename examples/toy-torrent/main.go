@@ -10,11 +10,13 @@ type Peer struct {
 	chunk []byte
 }
 
-var TOTAL_CHUNKS = 2
-var CHUNKS = [][]byte{
-	[]byte("Hello there!"),
-	[]byte("Welcome to Torrent"),
-}
+var (
+	TOTAL_CHUNKS = 2
+	CHUNKS       = [][]byte{
+		[]byte("Hello there!"),
+		[]byte("Welcome to Torrent"),
+	}
+)
 
 var chunksDownloaded int
 
@@ -58,7 +60,7 @@ func main() {
 	log.Println("downloaded and verfication successfully completed!!!")
 }
 
-func downloadFromPeer(peer Peer, chunkCh chan []byte) {
+func downloadFromPeer(peer Peer, chunkCh chan<- []byte) {
 	log.Printf("downloading from peer: %v \n", peer.id)
 	chunkCh <- peer.chunk
 	log.Printf("downloaded from peer: %v \n", peer.id)

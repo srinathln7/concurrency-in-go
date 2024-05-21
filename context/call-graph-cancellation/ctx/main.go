@@ -100,11 +100,11 @@ func locale(ctx context.Context) (string, error) {
 
 	// cannot print greeting: context deadline exceeded
 	// cannot print farewell: context canceled
-	timeout := 10 * time.Second
+	//timeout := 10 * time.Second
 
 	// hello world!
 	// goodbye world!
-	//timeout := 1 * time.Second
+	timeout := 1 * time.Second
 
 	select {
 	// `Done()` returns a closed channel when work done on behalf of this context should be cancelled.
